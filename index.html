@@ -1,36 +1,49 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <title>Magnetic Map in Cesium</title>
-  <script src="https://cesium.com/downloads/cesiumjs/releases/1.111/Build/Cesium/Cesium.js"></script>
-  <link href="https://cesium.com/downloads/cesiumjs/releases/1.111/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
-  <style>
-    html, body, #cesiumContainer {
-      width: 100%; height: 100%; margin: 0; padding: 0; overflow: hidden;
-    }
-  </style>
-</head>
-<body>
-  <div id="cesiumContainer"></div>
-  <script>
-    // Инициализация
-    Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI1NDgwZmY4MS0wYjJjLTQwZDAtYjgxMC0wNmU0OTBiMzNjNzEiLCJpZCI6Mjg4NjQ5LCJpYXQiOjE3NDMxNTEzNjV9.78SOshFiLo1g6VT_K3cUMbL3Cpcp8GMTRcCP1aQfs_Q';
+  <head>
+    <meta charset="UTF-8" />
+    <title>Magnetism Map</title>
+    <script src="https://cesium.com/downloads/cesiumjs/releases/1.113/Build/Cesium/Cesium.js"></script>
+    <link href="https://cesium.com/downloads/cesiumjs/releases/1.113/Build/Cesium/Widgets/widgets.css" rel="stylesheet" />
+    <style>
+      html,
+      body,
+      #cesiumContainer {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="cesiumContainer"></div>
+    <script>
+      // ✅ Твой токен доступа
+      Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI1NDgwZmY4MS0wYjJjLTQwZDAtYjgxMC0wNmU0OTBiMzNjNzEiLCJpZCI6Mjg4NjQ5LCJpYXQiOjE3NDMxNTEzNjV9.78SOshFiLo1g6VT_K3cUMbL3Cpcp8GMTRcCP1aQfs_Q';
 
-    const viewer = new Cesium.Viewer("cesiumContainer", {
-      terrainProvider: Cesium.CesiumTerrainProvider.fromIonAssetId(1),
-      imageryProvider: new Cesium.IonImageryProvider({ assetId: 3 }),
-      baseLayerPicker: false,
-    });
+      // ✅ Инициализация сцены
+      const viewer = new Cesium.Viewer('cesiumContainer', {
+        terrainProvider: Cesium.CesiumTerrainProvider.fromIonAssetId(1),
+        imageryProvider: new Cesium.IonImageryProvider({ assetId: 3 }),
+        baseLayerPicker: false
+      });
 
-    // Загрузка KML ассета
-    Cesium.IonResource.fromAssetId(3263528)
-      .then(resource => Cesium.KmlDataSource.load(resource))
-      .then(dataSource => {
+      // ✅ Загрузка твоей магнитной карты
+      async function loadKmlLayer() {
+        const resource = await Cesium.IonResource.fromAssetId(3263528);
+        const dataSource = await Cesium.KmlDataSource.load(resource, {
+          camera: viewer.scene.camera,
+          canvas: viewer.scene.canvas
+        });
         viewer.dataSources.add(dataSource);
+
+        // ✅ Центрировать камеру на карту
         viewer.flyTo(dataSource);
-      })
-      .catch(error => console.error('Ошибка загрузки KML:', error));
-  </script>
-</body>
+      }
+
+      loadKmlLayer();
+    </script>
+  </body>
 </html>
