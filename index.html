@@ -18,30 +18,25 @@
 <body>
   <div id="cesiumContainer"></div>
   <script>
-    // Твой токен
     Cesium.Ion.defaultAccessToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI1NDgwZmY4MS0wYjJjLTQwZDAtYjgxMC0wNmU0OTBiMzNjNzEiLCJpZCI6Mjg4NjQ5LCJpYXQiOjE3NDMxNTEzNjV9.78SOshFiLo1g6VT_K3cUMbL3Cpcp8GMTRcCP1aQfs_Q";
 
-    // Создаём Viewer с террейном и подложкой
     const viewer = new Cesium.Viewer("cesiumContainer", {
-      terrainProvider: new Cesium.CesiumTerrainProvider({
-        url: Cesium.IonResource.fromAssetId(1), // World Terrain
-      }),
-      imageryProvider: new Cesium.IonImageryProvider({ assetId: 2 }), // Bing Aerial
+      terrainProvider: Cesium.createWorldTerrain(),
+      imageryProvider: Cesium.createWorldImagery(),
       baseLayerPicker: false,
-      timeline: true,
       animation: true,
+      timeline: true,
     });
 
-    // Загружаем KML (магнитная карта)
-    Cesium.IonResource.fromAssetId(3263528)
-      .then(function (resource) {
-        return Cesium.KmlDataSource.load(resource);
-      })
-      .then(function (dataSource) {
+    const kmlAssetId = 3263528;
+    const kmlResource = Cesium.IonResource.fromAssetId(kmlAssetId);
+
+    Cesium.KmlDataSource.load(kmlResource)
+      .then((dataSource) => {
         viewer.dataSources.add(dataSource);
         viewer.flyTo(dataSource);
       })
-      .otherwise(function (error) {
+      .catch((error) => {
         console.error("Ошибка загрузки KML:", error);
       });
   </script>
