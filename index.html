@@ -23,30 +23,27 @@
   <body>
     <div id="cesiumContainer"></div>
     <script>
-      window.CESIUM_BASE_URL = "";
+      Cesium.Ion.defaultAccessToken =
+        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI1NDgwZmY4MS0wYjJjLTQwZDAtYjgxMC0wNmU0OTBiMzNjNzEiLCJpZCI6Mjg4NjQ5LCJpYXQiOjE3NDMxNTEzNjV9.78SOshFiLo1g6VT_K3cUMbL3Cpcp8GMTRcCP1aQfs_Q";
 
-      async function startCesium() {
-        Cesium.Ion.defaultAccessToken =
-          "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI1NDgwZmY4MS0wYjJjLTQwZDAtYjgxMC0wNmU0OTBiMzNjNzEiLCJpZCI6Mjg4NjQ5LCJpYXQiOjE3NDMxNTEzNjV9.78SOshFiLo1g6VT_K3cUMbL3Cpcp8GMTRcCP1aQfs_Q";
+      const viewer = new Cesium.Viewer("cesiumContainer", {
+        terrainProvider: Cesium.createWorldTerrain(),
+        imageryProvider: new Cesium.IonImageryProvider({ assetId: 2 }), // Bing Maps Aerial
+        timeline: true,
+        animation: true,
+        shouldAnimate: true,
+      });
 
-        const viewer = new Cesium.Viewer("cesiumContainer", {
-          terrainProvider: await Cesium.createWorldTerrain(),
-          imageryProvider: await Cesium.createWorldImagery(),
-          timeline: true,
-          animation: true,
-          shouldAnimate: true,
+      // Загрузка магнитной карты
+      Cesium.IonResource.fromAssetId(3263528)
+        .then((resource) => Cesium.KmlDataSource.load(resource))
+        .then((dataSource) => {
+          viewer.dataSources.add(dataSource);
+          viewer.flyTo(dataSource);
+        })
+        .otherwise(function (error) {
+          console.error("Ошибка загрузки KML:", error);
         });
-
-        // Загрузка магнитной карты (KML)
-        const resource = await Cesium.IonResource.fromAssetId(3263528);
-        const dataSource = await Cesium.KmlDataSource.load(resource);
-        viewer.dataSources.add(dataSource);
-
-        // Авто-приближение камеры на магнитную карту
-        viewer.flyTo(dataSource);
-      }
-
-      startCesium();
     </script>
   </body>
 </html>
