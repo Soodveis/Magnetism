@@ -19,15 +19,17 @@
 <body>
   <div id="cesiumContainer"></div>
   <script>
+    // Устанавливаем токен доступа Cesium ion
     Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI1NDgwZmY4MS0wYjJjLTQwZDAtYjgxMC0wNmU0OTBiMzNjNzEiLCJpZCI6Mjg4NjQ5LCJpYXQiOjE3NDMxNTEzNjV9.78SOshFiLo1g6VT_K3cUMbL3Cpcp8GMTRcCP1aQfs_Q';
 
+    // Инициализация глобуса
     const viewer = new Cesium.Viewer('cesiumContainer', {
-      terrainProvider: Cesium.createWorldTerrain(),
+      terrainProvider: Cesium.createWorldTerrain?.() || undefined, // Фикс для версии 1.111+
       timeline: true,
       animation: true
     });
 
-    // Загружаем KML-файл с ion.cesium.com по Asset ID
+    // Функция загрузки KML
     async function loadKML() {
       try {
         const resource = await Cesium.IonResource.fromAssetId(3264457);
