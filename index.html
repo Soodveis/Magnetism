@@ -2,136 +2,49 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Магнитные карты Cesium</title>
-  <script src="https://cesium.com/downloads/cesiumjs/releases/1.109/Build/Cesium/Cesium.js"></script>
-  <link href="https://cesium.com/downloads/cesiumjs/releases/1.109/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
+  <title>Magnetism KML Viewer</title>
+  <script src="https://cesium.com/downloads/cesiumjs/releases/1.111/Build/Cesium/Cesium.js"></script>
+  <link href="https://cesium.com/downloads/cesiumjs/releases/1.111/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
   <style>
     html, body, #cesiumContainer {
-      width: 100%; height: 100%; margin: 0; padding: 0; overflow: hidden;
-    }
-    #layerControls {
-      position: absolute;
-      top: 10px;
-      left: 10px;
-      z-index: 10;
-      background: rgba(255,255,255,0.9);
-      padding: 10px;
-      border-radius: 8px;
-    }
-    .layer-control {
-      margin-bottom: 10px;
-    }
-    label {
-      display: block;
-      font-weight: bold;
-    }
-    input[type=range] {
+      margin: 0;
+      padding: 0;
       width: 100%;
-    }
-    .toggle-btn {
-      margin-top: 4px;
-      padding: 2px 5px;
-      font-size: 12px;
+      height: 100%;
+      overflow: hidden;
+      background: #000;
     }
   </style>
 </head>
 <body>
   <div id="cesiumContainer"></div>
-  <div id="layerControls">
-    <div class="layer-control">
-      <label for="opacity1">Слой 1</label>
-      <input type="range" id="opacity1" min="0" max="1" step="0.01" value="1">
-      <button class="toggle-btn" id="toggle1">Отключить</button>
-    </div>
-    <div class="layer-control">
-      <label for="opacity2">Слой 2</label>
-      <input type="range" id="opacity2" min="0" max="1" step="0.01" value="1">
-      <button class="toggle-btn" id="toggle2">Отключить</button>
-    </div>
-    <div class="layer-control">
-      <label for="opacity3">Слой 3</label>
-      <input type="range" id="opacity3" min="0" max="1" step="0.01" value="1">
-      <button class="toggle-btn" id="toggle3">Отключить</button>
-    </div>
-  </div>
-
   <script>
-    window.CESIUM_BASE_URL = "";
+    // Устанавливаем токен доступа Cesium ion
+    Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI1NDgwZmY4MS0wYjJjLTQwZDAtYjgxMC0wNmU0OTBiMzNjNzEiLCJpZCI6Mjg4NjQ5LCJpYXQiOjE3NDMxNTEzNjV9.78SOshFiLo1g6VT_K3cUMbL3Cpcp8GMTRcCP1aQfs_Q';
 
-    Cesium.Ion.defaultAccessToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI1NDgwZmY4MS0wYjJjLTQwZDAtYjgxMC0wNmU0OTBiMzNjNzEiLCJpZCI6Mjg4NjQ5LCJpYXQiOjE3NDMxNTEzNjV9.78SOshFiLo1g6VT_K3cUMbL3Cpcp8GMTRcCP1aQfs_Q";
+    // Инициализация глобуса
+    const viewer = new Cesium.Viewer('cesiumContainer', {
+      terrainProvider: Cesium.createWorldTerrain?.() || undefined, // Фикс для версии 1.111+
+      timeline: true,
+      animation: true
+    });
 
-    async function startViewer() {
-      const terrain = await Cesium.CesiumTerrainProvider.fromIonAssetId(1);
-
-      const viewer = new Cesium.Viewer('cesiumContainer', {
-        terrainProvider: terrain,
-        baseLayerPicker: true
-      });
-
-      const layers = {
-        layer1: { id: 3264457, dataSource: null, visible: true },
-        layer2: { id: 3264480, dataSource: null, visible: true },
-        layer3: { id: 3264481, dataSource: null, visible: true }
-      };
-
-      function updateOpacity(layerKey, value) {
-        const layer = layers[layerKey];
-        if (layer && layer.dataSource) {
-          const entities = layer.dataSource.entities.values;
-          for (let entity of entities) {
-            if (entity.billboard) entity.billboard.color = Cesium.Color.WHITE.withAlpha(Number(value));
-            if (entity.polyline) entity.polyline.material = Cesium.Color.WHITE.withAlpha(Number(value));
-            if (entity.polygon) entity.polygon.material = Cesium.Color.WHITE.withAlpha(Number(value));
-            if (entity.rectangle) entity.rectangle.material = Cesium.Color.WHITE.withAlpha(Number(value));
-          }
-        }
+    // Функция загрузки KML
+    async function loadKML() {
+      try {
+        const resource = await Cesium.IonResource.fromAssetId(3264457);
+        const kmlLayer = await Cesium.KmlDataSource.load(resource, {
+          camera: viewer.scene.camera,
+          canvas: viewer.scene.canvas
+        });
+        viewer.dataSources.add(kmlLayer);
+        viewer.flyTo(kmlLayer);
+      } catch (error) {
+        console.error("Ошибка при загрузке KML:", error);
       }
-
-      function toggleVisibility(layerKey, buttonId) {
-        const layer = layers[layerKey];
-        const button = document.getElementById(buttonId);
-        if (layer && layer.dataSource) {
-          layer.visible = !layer.visible;
-          layer.dataSource.show = layer.visible;
-          button.textContent = layer.visible ? "Отключить" : "Включить";
-        }
-      }
-
-      for (const key in layers) {
-        const layer = layers[key];
-        Cesium.IonResource.fromAssetId(layer.id)
-          .then(resource => Cesium.KmlDataSource.load(resource))
-          .then(dataSource => {
-            layer.dataSource = dataSource;
-            viewer.dataSources.add(dataSource);
-          })
-          .catch(error => {
-            console.error(`Ошибка загрузки слоя ${key}:`, error);
-          });
-      }
-
-      document.getElementById("opacity1").addEventListener("input", function() {
-        updateOpacity("layer1", this.value);
-      });
-      document.getElementById("opacity2").addEventListener("input", function() {
-        updateOpacity("layer2", this.value);
-      });
-      document.getElementById("opacity3").addEventListener("input", function() {
-        updateOpacity("layer3", this.value);
-      });
-
-      document.getElementById("toggle1").addEventListener("click", function() {
-        toggleVisibility("layer1", "toggle1");
-      });
-      document.getElementById("toggle2").addEventListener("click", function() {
-        toggleVisibility("layer2", "toggle2");
-      });
-      document.getElementById("toggle3").addEventListener("click", function() {
-        toggleVisibility("layer3", "toggle3");
-      });
     }
 
-    startViewer();
+    loadKML();
   </script>
 </body>
 </html>
