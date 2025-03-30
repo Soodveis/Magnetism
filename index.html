@@ -32,7 +32,7 @@
     // Функция загрузки KML
     async function loadKML() {
       try {
-        const resource = await Cesium.IonResource.fromAssetId(3264480);
+        const resource = await Cesium.IonResource.fromAssetId(3264481);
         const kmlLayer = await Cesium.KmlDataSource.load(resource, {
           camera: viewer.scene.camera,
           canvas: viewer.scene.canvas
