@@ -53,7 +53,7 @@
     Cesium.Ion.defaultAccessToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI1NDgwZmY4MS0wYjJjLTQwZDAtYjgxMC0wNmU0OTBiMzNjNzEiLCJpZCI6Mjg4NjQ5LCJpYXQiOjE3NDMxNTEzNjV9.78SOshFiLo1g6VT_K3cUMbL3Cpcp8GMTRcCP1aQfs_Q";
 
     const viewer = new Cesium.Viewer('cesiumContainer', {
-      terrainProvider: Cesium.createWorldTerrainAsync(),
+      terrainProvider: Cesium.createWorldTerrain(),
       baseLayerPicker: true
     });
 
@@ -71,6 +71,7 @@
           if (entity.billboard) entity.billboard.color = Cesium.Color.WHITE.withAlpha(Number(value));
           if (entity.polyline) entity.polyline.material = Cesium.Color.WHITE.withAlpha(Number(value));
           if (entity.polygon) entity.polygon.material = Cesium.Color.WHITE.withAlpha(Number(value));
+          if (entity.rectangle) entity.rectangle.material = Cesium.Color.WHITE.withAlpha(Number(value));
         }
       }
     }
