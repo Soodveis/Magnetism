@@ -2,9 +2,9 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Magnetism Map</title>
-  <script src="https://cesium.com/downloads/cesiumjs/releases/1.110/Build/Cesium/Cesium.js"></script>
-  <link href="https://cesium.com/downloads/cesiumjs/releases/1.110/Build/Cesium/Widgets/widgets.css" rel="stylesheet" />
+  <title>Magnetism KML Viewer</title>
+  <script src="https://cesium.com/downloads/cesiumjs/releases/1.111/Build/Cesium/Cesium.js"></script>
+  <link href="https://cesium.com/downloads/cesiumjs/releases/1.111/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
   <style>
     html, body, #cesiumContainer {
       margin: 0;
@@ -12,33 +12,37 @@
       width: 100%;
       height: 100%;
       overflow: hidden;
+      background: #000;
     }
   </style>
 </head>
 <body>
   <div id="cesiumContainer"></div>
   <script>
-    // Твой access token
-    Cesium.Ion.defaultAccessToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI1NDgwZmY4MS0wYjJjLTQwZDAtYjgxMC0wNmU0OTBiMzNjNzEiLCJpZCI6Mjg4NjQ5LCJpYXQiOjE3NDMxNTEzNjV9.78SOshFiLo1g6VT_K3cUMbL3Cpcp8GMTRcCP1aQfs_Q";
+    Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI1NDgwZmY4MS0wYjJjLTQwZDAtYjgxMC0wNmU0OTBiMzNjNzEiLCJpZCI6Mjg4NjQ5LCJpYXQiOjE3NDMxNTEzNjV9.78SOshFiLo1g6VT_K3cUMbL3Cpcp8GMTRcCP1aQfs_Q';
 
-    // Создание viewer с terrain
-    const viewer = new Cesium.Viewer("cesiumContainer", {
-      terrainProvider: Cesium.WorldTerrain,
-      baseLayerPicker: true,
-      animation: true,
-      timeline: true
+    const viewer = new Cesium.Viewer('cesiumContainer', {
+      terrainProvider: Cesium.createWorldTerrain(),
+      timeline: true,
+      animation: true
     });
 
-    // Загрузка твоего KML из Cesium Ion
-    const kmlAssetId = 3264457;
-    const kmlResource = Cesium.IonResource.fromAssetId(kmlAssetId);
+    // Загружаем KML-файл с ion.cesium.com по Asset ID
+    async function loadKML() {
+      try {
+        const resource = await Cesium.IonResource.fromAssetId(3264457);
+        const kmlLayer = await Cesium.KmlDataSource.load(resource, {
+          camera: viewer.scene.camera,
+          canvas: viewer.scene.canvas
+        });
+        viewer.dataSources.add(kmlLayer);
+        viewer.flyTo(kmlLayer);
+      } catch (error) {
+        console.error("Ошибка при загрузке KML:", error);
+      }
+    }
 
-    Cesium.KmlDataSource.load(kmlResource).then((dataSource) => {
-      viewer.dataSources.add(dataSource);
-      viewer.flyTo(dataSource);
-    }).catch((error) => {
-      console.error("Ошибка при загрузке KML:", error);
-    });
+    loadKML();
   </script>
 </body>
 </html>
