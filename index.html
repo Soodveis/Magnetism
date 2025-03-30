@@ -9,7 +9,7 @@
     html, body, #cesiumContainer {
       width: 100%; height: 100%; margin: 0; padding: 0; overflow: hidden;
     }
-    #layerButtons {
+    #layerControls {
       position: absolute;
       top: 10px;
       left: 10px;
@@ -18,16 +18,33 @@
       padding: 10px;
       border-radius: 8px;
     }
-    button {
-      margin: 5px;
+    .layer-control {
+      margin-bottom: 10px;
+    }
+    label {
+      display: block;
+      font-weight: bold;
+    }
+    input[type=range] {
+      width: 100%;
     }
   </style>
 </head>
 <body>
   <div id="cesiumContainer"></div>
-  <div id="layerButtons">
-    <button onclick="toggleLayer('layer1')">Слой 1</button>
-    <button onclick="toggleLayer('layer2')">Слой 2</button>
+  <div id="layerControls">
+    <div class="layer-control">
+      <label for="opacity1">Слой 1</label>
+      <input type="range" id="opacity1" min="0" max="1" step="0.01" value="1" oninput="updateOpacity('layer1', this.value)">
+    </div>
+    <div class="layer-control">
+      <label for="opacity2">Слой 2</label>
+      <input type="range" id="opacity2" min="0" max="1" step="0.01" value="1" oninput="updateOpacity('layer2', this.value)">
+    </div>
+    <div class="layer-control">
+      <label for="opacity3">Слой 3</label>
+      <input type="range" id="opacity3" min="0" max="1" step="0.01" value="1" oninput="updateOpacity('layer3', this.value)">
+    </div>
   </div>
 
   <script>
@@ -41,16 +58,9 @@
     });
 
     const layers = {
-      layer1: {
-        id: 3263528,
-        visible: true,
-        dataSource: null
-      },
-      layer2: {
-        id: 3264457,
-        visible: true,
-        dataSource: null
-      }
+      layer1: { id: 3263528, dataSource: null },
+      layer2: { id: 3264457, dataSource: null },
+      layer3: { id: 3265301, dataSource: null } // добавлен третий слой
     };
 
     for (const key in layers) {
@@ -63,11 +73,16 @@
         });
     }
 
-    function toggleLayer(name) {
-      const layer = layers[name];
-      if (!layer || !layer.dataSource) return;
-      layer.visible = !layer.visible;
-      layer.dataSource.show = layer.visible;
+    function updateOpacity(layerKey, value) {
+      const layer = layers[layerKey];
+      if (layer && layer.dataSource) {
+        const entities = layer.dataSource.entities.values;
+        for (let entity of entities) {
+          if (entity.billboard) entity.billboard.color = Cesium.Color.WHITE.withAlpha(Number(value));
+          if (entity.polyline) entity.polyline.material = Cesium.Color.WHITE.withAlpha(Number(value));
+          if (entity.polygon) entity.polygon.material = Cesium.Color.WHITE.withAlpha(Number(value));
+        }
+      }
     }
   </script>
 </body>
