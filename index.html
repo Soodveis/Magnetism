@@ -60,72 +60,78 @@
 
     Cesium.Ion.defaultAccessToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI1NDgwZmY4MS0wYjJjLTQwZDAtYjgxMC0wNmU0OTBiMzNjNzEiLCJpZCI6Mjg4NjQ5LCJpYXQiOjE3NDMxNTEzNjV9.78SOshFiLo1g6VT_K3cUMbL3Cpcp8GMTRcCP1aQfs_Q";
 
-    const viewer = new Cesium.Viewer('cesiumContainer', {
-      terrainProvider: Cesium.createWorldTerrain?.() ?? undefined,
-      baseLayerPicker: true
-    });
+    async function startViewer() {
+      const terrain = await Cesium.CesiumTerrainProvider.fromIonAssetId(1);
 
-    const layers = {
-      layer1: { id: 3264457, dataSource: null, visible: true },
-      layer2: { id: 3264480, dataSource: null, visible: true },
-      layer3: { id: 3264481, dataSource: null, visible: true }
-    };
+      const viewer = new Cesium.Viewer('cesiumContainer', {
+        terrainProvider: terrain,
+        baseLayerPicker: true
+      });
 
-    function updateOpacity(layerKey, value) {
-      const layer = layers[layerKey];
-      if (layer && layer.dataSource) {
-        const entities = layer.dataSource.entities.values;
-        for (let entity of entities) {
-          if (entity.billboard) entity.billboard.color = Cesium.Color.WHITE.withAlpha(Number(value));
-          if (entity.polyline) entity.polyline.material = Cesium.Color.WHITE.withAlpha(Number(value));
-          if (entity.polygon) entity.polygon.material = Cesium.Color.WHITE.withAlpha(Number(value));
-          if (entity.rectangle) entity.rectangle.material = Cesium.Color.WHITE.withAlpha(Number(value));
+      const layers = {
+        layer1: { id: 3264457, dataSource: null, visible: true },
+        layer2: { id: 3264480, dataSource: null, visible: true },
+        layer3: { id: 3264481, dataSource: null, visible: true }
+      };
+
+      function updateOpacity(layerKey, value) {
+        const layer = layers[layerKey];
+        if (layer && layer.dataSource) {
+          const entities = layer.dataSource.entities.values;
+          for (let entity of entities) {
+            if (entity.billboard) entity.billboard.color = Cesium.Color.WHITE.withAlpha(Number(value));
+            if (entity.polyline) entity.polyline.material = Cesium.Color.WHITE.withAlpha(Number(value));
+            if (entity.polygon) entity.polygon.material = Cesium.Color.WHITE.withAlpha(Number(value));
+            if (entity.rectangle) entity.rectangle.material = Cesium.Color.WHITE.withAlpha(Number(value));
+          }
         }
       }
-    }
 
-    function toggleVisibility(layerKey, buttonId) {
-      const layer = layers[layerKey];
-      const button = document.getElementById(buttonId);
-      if (layer && layer.dataSource) {
-        layer.visible = !layer.visible;
-        layer.dataSource.show = layer.visible;
-        button.textContent = layer.visible ? "Отключить" : "Включить";
+      function toggleVisibility(layerKey, buttonId) {
+        const layer = layers[layerKey];
+        const button = document.getElementById(buttonId);
+        if (layer && layer.dataSource) {
+          layer.visible = !layer.visible;
+          layer.dataSource.show = layer.visible;
+          button.textContent = layer.visible ? "Отключить" : "Включить";
+        }
       }
+
+      for (const key in layers) {
+        const layer = layers[key];
+        Cesium.IonResource.fromAssetId(layer.id)
+          .then(resource => Cesium.KmlDataSource.load(resource))
+          .then(dataSource => {
+            layer.dataSource = dataSource;
+            viewer.dataSources.add(dataSource);
+          })
+          .catch(error => {
+            console.error(`Ошибка загрузки слоя ${key}:`, error);
+          });
+      }
+
+      document.getElementById("opacity1").addEventListener("input", function() {
+        updateOpacity("layer1", this.value);
+      });
+      document.getElementById("opacity2").addEventListener("input", function() {
+        updateOpacity("layer2", this.value);
+      });
+      document.getElementById("opacity3").addEventListener("input", function() {
+        updateOpacity("layer3", this.value);
+      });
+
+      document.getElementById("toggle1").addEventListener("click", function() {
+        toggleVisibility("layer1", "toggle1");
+      });
+      document.getElementById("toggle2").addEventListener("click", function() {
+        toggleVisibility("layer2", "toggle2");
+      });
+      document.getElementById("toggle3").addEventListener("click", function() {
+        toggleVisibility("layer3", "toggle3");
+      });
     }
 
-    for (const key in layers) {
-      const layer = layers[key];
-      Cesium.IonResource.fromAssetId(layer.id)
-        .then(resource => Cesium.KmlDataSource.load(resource))
-        .then(dataSource => {
-          layer.dataSource = dataSource;
-          viewer.dataSources.add(dataSource);
-        })
-        .catch(error => {
-          console.error(`Ошибка загрузки слоя ${key}:`, error);
-        });
-    }
-
-    document.getElementById("opacity1").addEventListener("input", function() {
-      updateOpacity("layer1", this.value);
-    });
-    document.getElementById("opacity2").addEventListener("input", function() {
-      updateOpacity("layer2", this.value);
-    });
-    document.getElementById("opacity3").addEventListener("input", function() {
-      updateOpacity("layer3", this.value);
-    });
-
-    document.getElementById("toggle1").addEventListener("click", function() {
-      toggleVisibility("layer1", "toggle1");
-    });
-    document.getElementById("toggle2").addEventListener("click", function() {
-      toggleVisibility("layer2", "toggle2");
-    });
-    document.getElementById("toggle3").addEventListener("click", function() {
-      toggleVisibility("layer3", "toggle3");
-    });
+    startViewer();
   </script>
 </body>
 </html>
