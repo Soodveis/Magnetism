@@ -61,7 +61,7 @@
     Cesium.Ion.defaultAccessToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI1NDgwZmY4MS0wYjJjLTQwZDAtYjgxMC0wNmU0OTBiMzNjNzEiLCJpZCI6Mjg4NjQ5LCJpYXQiOjE3NDMxNTEzNjV9.78SOshFiLo1g6VT_K3cUMbL3Cpcp8GMTRcCP1aQfs_Q";
 
     const viewer = new Cesium.Viewer('cesiumContainer', {
-      terrainProvider: Cesium.createWorldTerrainAsync(),
+      terrainProvider: Cesium.createWorldTerrain(),
       baseLayerPicker: true
     });
 
@@ -101,6 +101,9 @@
         .then(dataSource => {
           layer.dataSource = dataSource;
           viewer.dataSources.add(dataSource);
+        })
+        .catch(error => {
+          console.error(`Ошибка загрузки слоя ${key}:`, error);
         });
     }
 
