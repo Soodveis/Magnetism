@@ -2,49 +2,73 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Magnetism KML Viewer</title>
-  <script src="https://cesium.com/downloads/cesiumjs/releases/1.111/Build/Cesium/Cesium.js"></script>
-  <link href="https://cesium.com/downloads/cesiumjs/releases/1.111/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
+  <title>Магнитные карты Cesium</title>
+  <script src="https://cesium.com/downloads/cesiumjs/releases/1.109/Build/Cesium/Cesium.js"></script>
+  <link href="https://cesium.com/downloads/cesiumjs/releases/1.109/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
   <style>
     html, body, #cesiumContainer {
-      margin: 0;
-      padding: 0;
-      width: 100%;
-      height: 100%;
-      overflow: hidden;
-      background: #000;
+      width: 100%; height: 100%; margin: 0; padding: 0; overflow: hidden;
+    }
+    #layerButtons {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      z-index: 10;
+      background: rgba(255,255,255,0.9);
+      padding: 10px;
+      border-radius: 8px;
+    }
+    button {
+      margin: 5px;
     }
   </style>
 </head>
 <body>
   <div id="cesiumContainer"></div>
-  <script>
-    // Устанавливаем токен доступа Cesium ion
-    Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI1NDgwZmY4MS0wYjJjLTQwZDAtYjgxMC0wNmU0OTBiMzNjNzEiLCJpZCI6Mjg4NjQ5LCJpYXQiOjE3NDMxNTEzNjV9.78SOshFiLo1g6VT_K3cUMbL3Cpcp8GMTRcCP1aQfs_Q';
+  <div id="layerButtons">
+    <button onclick="toggleLayer('layer1')">Слой 1</button>
+    <button onclick="toggleLayer('layer2')">Слой 2</button>
+  </div>
 
-    // Инициализация глобуса
+  <script>
+    window.CESIUM_BASE_URL = "";
+
+    Cesium.Ion.defaultAccessToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI1NDgwZmY4MS0wYjJjLTQwZDAtYjgxMC0wNmU0OTBiMzNjNzEiLCJpZCI6Mjg4NjQ5LCJpYXQiOjE3NDMxNTEzNjV9.78SOshFiLo1g6VT_K3cUMbL3Cpcp8GMTRcCP1aQfs_Q";
+
     const viewer = new Cesium.Viewer('cesiumContainer', {
-      terrainProvider: Cesium.createWorldTerrain?.() || undefined, // Фикс для версии 1.111+
-      timeline: true,
-      animation: true
+      terrainProvider: Cesium.createWorldTerrain(),
+      baseLayerPicker: true
     });
 
-    // Функция загрузки KML
-    async function loadKML() {
-      try {
-        const resource = await Cesium.IonResource.fromAssetId(3264457);
-        const kmlLayer = await Cesium.KmlDataSource.load(resource, {
-          camera: viewer.scene.camera,
-          canvas: viewer.scene.canvas
-        });
-        viewer.dataSources.add(kmlLayer);
-        viewer.flyTo(kmlLayer);
-      } catch (error) {
-        console.error("Ошибка при загрузке KML:", error);
+    const layers = {
+      layer1: {
+        id: 3263528,
+        visible: true,
+        dataSource: null
+      },
+      layer2: {
+        id: 3264457,
+        visible: true,
+        dataSource: null
       }
+    };
+
+    for (const key in layers) {
+      const layer = layers[key];
+      Cesium.IonResource.fromAssetId(layer.id)
+        .then(resource => Cesium.KmlDataSource.load(resource))
+        .then(dataSource => {
+          layer.dataSource = dataSource;
+          viewer.dataSources.add(dataSource);
+        });
     }
 
-    loadKML();
+    function toggleLayer(name) {
+      const layer = layers[name];
+      if (!layer || !layer.dataSource) return;
+      layer.visible = !layer.visible;
+      layer.dataSource.show = layer.visible;
+    }
   </script>
 </body>
 </html>
