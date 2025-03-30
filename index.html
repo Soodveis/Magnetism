@@ -28,6 +28,11 @@
     input[type=range] {
       width: 100%;
     }
+    .toggle-btn {
+      margin-top: 4px;
+      padding: 2px 5px;
+      font-size: 12px;
+    }
   </style>
 </head>
 <body>
@@ -36,14 +41,17 @@
     <div class="layer-control">
       <label for="opacity1">Слой 1</label>
       <input type="range" id="opacity1" min="0" max="1" step="0.01" value="1">
+      <button class="toggle-btn" id="toggle1">Отключить</button>
     </div>
     <div class="layer-control">
       <label for="opacity2">Слой 2</label>
       <input type="range" id="opacity2" min="0" max="1" step="0.01" value="1">
+      <button class="toggle-btn" id="toggle2">Отключить</button>
     </div>
     <div class="layer-control">
       <label for="opacity3">Слой 3</label>
       <input type="range" id="opacity3" min="0" max="1" step="0.01" value="1">
+      <button class="toggle-btn" id="toggle3">Отключить</button>
     </div>
   </div>
 
@@ -53,14 +61,14 @@
     Cesium.Ion.defaultAccessToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI1NDgwZmY4MS0wYjJjLTQwZDAtYjgxMC0wNmU0OTBiMzNjNzEiLCJpZCI6Mjg4NjQ5LCJpYXQiOjE3NDMxNTEzNjV9.78SOshFiLo1g6VT_K3cUMbL3Cpcp8GMTRcCP1aQfs_Q";
 
     const viewer = new Cesium.Viewer('cesiumContainer', {
-      terrainProvider: Cesium.createWorldTerrain(),
+      terrainProvider: Cesium.createWorldTerrainAsync(),
       baseLayerPicker: true
     });
 
     const layers = {
-      layer1: { id: 3264457, dataSource: null },
-      layer2: { id: 3264480, dataSource: null },
-      layer3: { id: 3264481, dataSource: null }
+      layer1: { id: 3264457, dataSource: null, visible: true },
+      layer2: { id: 3264480, dataSource: null, visible: true },
+      layer3: { id: 3264481, dataSource: null, visible: true }
     };
 
     function updateOpacity(layerKey, value) {
@@ -73,6 +81,16 @@
           if (entity.polygon) entity.polygon.material = Cesium.Color.WHITE.withAlpha(Number(value));
           if (entity.rectangle) entity.rectangle.material = Cesium.Color.WHITE.withAlpha(Number(value));
         }
+      }
+    }
+
+    function toggleVisibility(layerKey, buttonId) {
+      const layer = layers[layerKey];
+      const button = document.getElementById(buttonId);
+      if (layer && layer.dataSource) {
+        layer.visible = !layer.visible;
+        layer.dataSource.show = layer.visible;
+        button.textContent = layer.visible ? "Отключить" : "Включить";
       }
     }
 
@@ -94,6 +112,16 @@
     });
     document.getElementById("opacity3").addEventListener("input", function() {
       updateOpacity("layer3", this.value);
+    });
+
+    document.getElementById("toggle1").addEventListener("click", function() {
+      toggleVisibility("layer1", "toggle1");
+    });
+    document.getElementById("toggle2").addEventListener("click", function() {
+      toggleVisibility("layer2", "toggle2");
+    });
+    document.getElementById("toggle3").addEventListener("click", function() {
+      toggleVisibility("layer3", "toggle3");
     });
   </script>
 </body>
