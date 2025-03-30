@@ -35,15 +35,15 @@
   <div id="layerControls">
     <div class="layer-control">
       <label for="opacity1">Слой 1</label>
-      <input type="range" id="opacity1" min="0" max="1" step="0.01" value="1" oninput="updateOpacity('layer1', this.value)">
+      <input type="range" id="opacity1" min="0" max="1" step="0.01" value="1">
     </div>
     <div class="layer-control">
       <label for="opacity2">Слой 2</label>
-      <input type="range" id="opacity2" min="0" max="1" step="0.01" value="1" oninput="updateOpacity('layer2', this.value)">
+      <input type="range" id="opacity2" min="0" max="1" step="0.01" value="1">
     </div>
     <div class="layer-control">
       <label for="opacity3">Слой 3</label>
-      <input type="range" id="opacity3" min="0" max="1" step="0.01" value="1" oninput="updateOpacity('layer3', this.value)">
+      <input type="range" id="opacity3" min="0" max="1" step="0.01" value="1">
     </div>
   </div>
 
@@ -53,25 +53,15 @@
     Cesium.Ion.defaultAccessToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI1NDgwZmY4MS0wYjJjLTQwZDAtYjgxMC0wNmU0OTBiMzNjNzEiLCJpZCI6Mjg4NjQ5LCJpYXQiOjE3NDMxNTEzNjV9.78SOshFiLo1g6VT_K3cUMbL3Cpcp8GMTRcCP1aQfs_Q";
 
     const viewer = new Cesium.Viewer('cesiumContainer', {
-      terrainProvider: Cesium.createWorldTerrain(),
+      terrainProvider: Cesium.createWorldTerrainAsync(),
       baseLayerPicker: true
     });
 
     const layers = {
-      layer1: { id: 3263528, dataSource: null },
-      layer2: { id: 3264457, dataSource: null },
-      layer3: { id: 3265301, dataSource: null } // добавлен третий слой
+      layer1: { id: 3264457, dataSource: null },
+      layer2: { id: 3264480, dataSource: null },
+      layer3: { id: 3264481, dataSource: null }
     };
-
-    for (const key in layers) {
-      const layer = layers[key];
-      Cesium.IonResource.fromAssetId(layer.id)
-        .then(resource => Cesium.KmlDataSource.load(resource))
-        .then(dataSource => {
-          layer.dataSource = dataSource;
-          viewer.dataSources.add(dataSource);
-        });
-    }
 
     function updateOpacity(layerKey, value) {
       const layer = layers[layerKey];
@@ -84,6 +74,26 @@
         }
       }
     }
+
+    for (const key in layers) {
+      const layer = layers[key];
+      Cesium.IonResource.fromAssetId(layer.id)
+        .then(resource => Cesium.KmlDataSource.load(resource))
+        .then(dataSource => {
+          layer.dataSource = dataSource;
+          viewer.dataSources.add(dataSource);
+        });
+    }
+
+    document.getElementById("opacity1").addEventListener("input", function() {
+      updateOpacity("layer1", this.value);
+    });
+    document.getElementById("opacity2").addEventListener("input", function() {
+      updateOpacity("layer2", this.value);
+    });
+    document.getElementById("opacity3").addEventListener("input", function() {
+      updateOpacity("layer3", this.value);
+    });
   </script>
 </body>
 </html>
